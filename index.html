@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Comedy Show Finder</title>
+<meta name="theme-color" content="#111111">
+<style>
+html,body{margin:0;height:100%;background:#fff;color:#111;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+@media (prefers-color-scheme:dark){html,body{background:#111;color:#eee}}
+#app{position:fixed;inset:0;width:100%;height:100%;border:0}
+#gov{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:5}
+#gov.on{display:flex}
+#gbox{background:#fff;color:#111;border-radius:14px;padding:24px;max-width:320px;width:calc(100% - 48px);text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.4)}
+#gbox h2{margin:0 0 6px;font-size:18px}
+#gbox p{margin:0 0 16px;font-size:14px;color:#555}
+#gbtn{display:flex;justify-content:center;min-height:44px}
+#gx{margin-top:14px;background:none;border:0;color:#555;font-size:14px;cursor:pointer;text-decoration:underline}
+#gerr{color:#b00020;font-size:13px;margin-top:10px;min-height:1em}
+</style>
+</head>
+<body>
+<iframe id="app" title="Comedy Show Finder" allow="clipboard-write"></iframe>
+<div id="gov" role="dialog" aria-modal="true" aria-label="Sign in with Google">
+  <div id="gbox">
+    <h2>Sign in with Google</h2>
+    <p>One tap and you're back in the app.</p>
+    <div id="gbtn"></div>
+    <div id="gerr" role="alert"></div>
+    <button id="gx" type="button">Cancel</button>
+  </div>
+</div>
+<noscript><p style="padding:24px">Please enable JavaScript, or <a href="https://script.google.com/macros/s/AKfycbxjVdGLEi9hPmbIR1q4KeIJ5aOllNyvHcGEqz88phhY3yFitwpe6zWauahJxRQM7qy-/exec">open the app directly</a>.</p></noscript>
+<script>
+(function(){
+var EXEC='https://script.google.com/macros/s/AKfycbxjVdGLEi9hPmbIR1q4KeIJ5aOllNyvHcGEqz88phhY3yFitwpe6zWauahJxRQM7qy-/exec';
+var CLIENT_ID='112555738843-bqko46i9subsv6uv1u1vq4mbtsagqh2t.apps.googleusercontent.com';
+var KEY='cnf_session', mem='';
+function get(){try{return localStorage.getItem(KEY)||''}catch(e){return mem}}
+function set(v){mem=v||'';try{if(v)localStorage.setItem(KEY,v);else localStorage.removeItem(KEY)}catch(e){}}
+var frame=document.getElementById('app'), ov=document.getElementById('gov'), gerr=document.getElementById('gerr');
+function load(idt){
+  var u=EXEC+'?emb=1';
+  var s=get(); if(s)u+='&s='+encodeURIComponent(s);
+  if(idt)u+='&idt='+encodeURIComponent(idt);
+  frame.src=u;
+}
+function okOrigin(o){try{var h=new URL(o).hostname;return h==='script.google.com'||/\.googleusercontent\.com$/.test(h)}catch(e){return false}}
+var gisReady=false;
+function showGoogle(){
+  gerr.textContent=''; ov.classList.add('on');
+  if(gisReady)return;
+  var sc=document.createElement('script');
+  sc.src='https://accounts.google.com/gsi/client'; sc.async=true;
+  sc.onload=function(){
+    try{
+      google.accounts.id.initialize({client_id:CLIENT_ID,callback:function(r){ov.classList.remove('on');if(r&&r.credential)load(r.credential)},auto_select:false,cancel_on_tap_outside:true});
+      google.accounts.id.renderButton(document.getElementById('gbtn'),{theme:'outline',size:'large',type:'standard',text:'continue_with',shape:'pill'});
+      gisReady=true;
+    }catch(e){gerr.textContent='Google sign-in could not start.'}
+  };
+  sc.onerror=function(){gerr.textContent='Could not load Google sign-in. Check your connection.'};
+  document.head.appendChild(sc);
+}
+window.addEventListener('message',function(ev){
+  if(!okOrigin(ev.origin))return;
+  var m=ev.data; if(!m||typeof m!=='object')return;
+  if(m.type==='session'&&typeof m.token==='string'&&m.token.length<300)set(m.token);
+  else if(m.type==='google')showGoogle();
+});
+document.getElementById('gx').onclick=function(){ov.classList.remove('on')};
+ov.addEventListener('click',function(e){if(e.target===ov)ov.classList.remove('on')});
+load('');
+})();
+</script>
+</body>
+</html>
